@@ -5,12 +5,16 @@ from bs4 import BeautifulSoup
 
 app = FastAPI()
 
+# Модель для вхідного JSON-запиту
 class SearchQuery(BaseModel):
     question: str
 
+# Ендпоінт для GPT або користувача
 @app.post("/web_search")
 def web_search(query: SearchQuery):
     headers = {"User-Agent": "Mozilla/5.0"}
+
+    # DuckDuckGo — без CAPTCHA, без ключа
     url = f"https://html.duckduckgo.com/html/?q={query.question}"
     response = requests.get(url, headers=headers)
 
@@ -18,7 +22,7 @@ def web_search(query: SearchQuery):
     results = soup.select("a.result__a")
 
     top_results = []
-    for r in results[:5]:
+    for r in results[:5]:  # Топ-5 результатів
         title = r.get_text()
         link = r.get("href")
         top_results.append({"title": title, "link": link})
