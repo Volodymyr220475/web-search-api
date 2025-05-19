@@ -27,3 +27,10 @@ def web_search(query: SearchQuery):
 @app.get("/")
 def root():
     return {"message": "API працює!"}
+response = requests.get(url, headers=headers)
+
+response = requests.get(url, headers=headers, timeout=5)
+print("Response status:", response.status_code)
+print("Snippet:", response.text[:500])
+
+
