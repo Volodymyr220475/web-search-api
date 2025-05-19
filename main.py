@@ -25,7 +25,6 @@ def web_search(query: SearchQuery):
 
     return {"results": top_results}
 
-# Додатковий root-ендпоінт (для тесту)
 @app.get("/")
 def root():
     return {"message": "API працює!"}
