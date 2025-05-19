@@ -5,26 +5,30 @@ from bs4 import BeautifulSoup
 
 app = FastAPI()
 
+
 class SearchQuery(BaseModel):
     question: str
+
 
 @app.post("/web_search")
 def web_search(query: SearchQuery):
     headers = {"User-Agent": "Mozilla/5.0"}
-    url = f"https://html.duckduckgo.com/html/?q={query.question}"
+    url = f"https://html.duckduckgo.com/html?q={query.question}"
     response = requests.get(url, headers=headers, timeout=5)
 
     soup = BeautifulSoup(response.text, "html.parser")
-    results = soup.select("a.result__a")
+    links = soup.select("a.result__a")
 
-    top_results = []
-    for r in results[:5]:
-        title = r.get_text()
-        link = r.get("href")
-        top_results.append({"title": title, "link": link})
+    results = []
+    for link in links[:5]:
+        results.append({
+            "title": link.get_text(),
+            "url": link.get("href")
+        })
 
-    return {"results": top_results}
+    return {"results": results}
+
 
 @app.get("/")
-def root():
-    return {"message": "API працює!"}
+def read_root():
+    return {"message": "API працює"}
