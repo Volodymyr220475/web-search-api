@@ -25,7 +25,6 @@ def web_search(query: SearchQuery):
 
     return {"results": top_results}
 
-# ✅ Root endpoint to confirm it's alive
 @app.get("/")
 def root():
     return {"message": "API працює!"}
