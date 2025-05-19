@@ -12,11 +12,7 @@ class SearchQuery(BaseModel):
 def web_search(query: SearchQuery):
     headers = {"User-Agent": "Mozilla/5.0"}
     url = f"https://html.duckduckgo.com/html/?q={query.question}"
-    response = requests.get(url, headers=headers)
-
-    # ✅ print всередині функції, коли url вже існує
-    print("Response status:", response.status_code)
-    print("Snippet:", response.text[:500])
+    response = requests.get(url, headers=headers, timeout=5)
 
     soup = BeautifulSoup(response.text, "html.parser")
     results = soup.select("a.result__a")
