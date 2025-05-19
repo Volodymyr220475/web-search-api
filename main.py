@@ -5,33 +5,35 @@ from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-
 class SearchQuery(BaseModel):
     question: str
 
-
 @app.post("/web_search")
 def web_search(query: SearchQuery):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    url = f"https://html.duckduckgo.com/html?q={query.question}"
-
     try:
-        response = requests.get(url, headers=headers, timeout=5)
-        soup = BeautifulSoup(response.text, "html.parser")
-        links = soup.select("a.result__a")
+        url = f"https://html.duckduckgo.com/html?q={query.question}"
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Accept-Language": "en-US,en;q=0.9"
+        }
+        response = requests.get(url, headers=headers, timeout=7)
 
+        if response.status_code != 200:
+            return {"error": f"Search request failed with status {response.status_code}"}
+
+        soup = BeautifulSoup(response.text, "html.parser")
         results = []
-        for link in links[:5]:
-            results.append({
-                "title": link.get_text(),
-                "url": link.get("href")
-            })
+        
+        for result in soup.select("a.result__a")[:10]:
+            title = result.get_text(strip=True)
+            href = result.get("href")
+            if title and href:
+                results.append({"title": title, "url": href})
 
         return {"results": results}
 
     except Exception as e:
         return {"error": str(e)}
-
 
 @app.get("/")
 def read_root():
