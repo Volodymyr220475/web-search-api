@@ -1,0 +1,36 @@
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+
+(async () => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
+  const page = await browser.newPage();
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36');
+
+  await page.goto('https://www.forexfactory.com/calendar?week=this', {
+    waitUntil: 'networkidle2',
+    timeout: 60000
+  });
+
+  const events = await page.evaluate(() => {
+    const rows = Array.from(document.querySelectorAll('#calendar__row'));
+    return rows.map(row => {
+      const time = row.querySelector('.calendar__time')?.innerText.trim() || '';
+      const currency = row.querySelector('.calendar__currency')?.innerText.trim() || '';
+      const impact = row.querySelector('.impact')?.title?.trim() || '';
+      const event = row.querySelector('.calendar__event-title')?.innerText.trim() || '';
+      const actual = row.querySelector('.calendar__actual')?.innerText.trim() || '';
+      const forecast = row.querySelector('.calendar__forecast')?.innerText.trim() || '';
+      const previous = row.querySelector('.calendar__previous')?.innerText.trim() || '';
+      return { time, currency, impact, event, actual, forecast, previous };
+    });
+  });
+
+  fs.writeFileSync('forex_events.json', JSON.stringify(events, null, 2));
+  console.log('✅ Дані збережено у forex_events.json');
+
+  await browser.close();
+})();
